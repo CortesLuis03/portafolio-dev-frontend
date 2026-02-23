@@ -1,8 +1,22 @@
 import { motion } from "framer-motion";
 import { ArrowDown, Github, Linkedin, Mail } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
+import { useConfigs } from "@/hooks/useConfigs";
 
 const HeroSection = () => {
+
+  const { data, isLoading, isError, error } = useConfigs();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error: {error.message}</div>;
+  } 
+
+  const { full_name, profile, about } = data;
+
   return (
     <section
       id="hero"
@@ -34,7 +48,7 @@ const HeroSection = () => {
           transition={{ delay: 0.4 }}
           className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4"
         >
-          <span className="text-gradient">Tu Nombre</span>
+          <span className="text-gradient">{full_name}</span>
         </motion.h1>
 
         <motion.h2
@@ -43,7 +57,7 @@ const HeroSection = () => {
           transition={{ delay: 0.6 }}
           className="text-xl md:text-3xl text-muted-foreground font-mono mb-8"
         >
-          Full Stack Developer
+          {profile}
         </motion.h2>
 
         <motion.p
@@ -52,9 +66,7 @@ const HeroSection = () => {
           transition={{ delay: 0.8 }}
           className="max-w-xl mx-auto text-secondary-foreground mb-12 leading-relaxed"
         >
-          Desarrollo aplicaciones web modernas, escalables y con enfoque en la
-          experiencia de usuario. Apasionado por la arquitectura limpia y las
-          buenas prácticas.
+          {about}
         </motion.p>
 
         <motion.div
