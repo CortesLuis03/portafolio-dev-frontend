@@ -2,10 +2,12 @@ import { motion } from "framer-motion";
 import { ArrowDown, Github, Linkedin, Mail } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import { useConfigs } from "@/hooks/useConfigs";
+import { useSocialNetworks } from "@/hooks/useSocialNetworks";
 
 const HeroSection = () => {
 
   const { data, isLoading, isError, error } = useConfigs();
+  const { data: socialNetworks } = useSocialNetworks();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -75,18 +77,17 @@ const HeroSection = () => {
           transition={{ delay: 1 }}
           className="flex items-center justify-center gap-6 mb-16"
         >
-          {[
-            { icon: Github, href: "#", label: "GitHub" },
-            { icon: Linkedin, href: "#", label: "LinkedIn" },
-            { icon: Mail, href: "#contact", label: "Email" },
-          ].map(({ icon: Icon, href, label }) => (
+          {socialNetworks?.map(({ icon, url, name }) => (
             <a
-              key={label}
-              href={href}
-              aria-label={label}
+              key={name}
+              href={url}
+              aria-label={name}
               className="p-3 rounded-lg border border-border bg-surface hover:bg-surface-hover hover:border-primary/50 transition-all duration-300"
+              target={name === "Email" ? "_self" : "_blank"}
             >
-              <Icon size={20} className="text-muted-foreground" />
+              <div className="w-8 h-8">
+                <img src={icon} className="w-8 h-8 object-contain grayscale brightness-0 invert" />
+              </div>
             </a>
           ))}
         </motion.div>
