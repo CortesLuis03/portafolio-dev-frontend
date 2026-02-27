@@ -6,16 +6,42 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { useAuth } from "@/hooks/useAuth";
+import axios from "axios";
+import { toast } from "sonner";
+
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mockup: navigate directly
-    navigate("/admin");
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/auth/login`,
+        {
+          email,
+          password,
+        },
+      );
+
+      const { token, user } = response.data;
+      login(token, user);
+      toast.success("Sesión iniciada correctamente");
+      navigate("/admin");
+    } catch (error: any) {
+      console.error("Login error", error);
+      const message = error.response?.data?.error || "Error al iniciar sesión";
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -81,8 +107,8 @@ const AdminLogin = () => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full">
-              Acceder
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Iniciando..." : "Acceder"}
             </Button>
           </form>
         </div>

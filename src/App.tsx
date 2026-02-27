@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./hooks/useAuth";
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
@@ -14,6 +16,7 @@ import ProjectsManager from "./pages/admin/ProjectsManager";
 import ExperienceManager from "./pages/admin/ExperienceManager";
 import TestimonialsManager from "./pages/admin/TestimonialManager";
 import AdminLayout from "./layouts/AdminLayout";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -22,22 +25,26 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="profile" element={<ProfileManager />} />
-            <Route path="social" element={<SocialManager />} />
-            <Route path="skills" element={<SkillsManager />} />
-            <Route path="projects" element={<ProjectsManager />} />
-            <Route path="experience" element={<ExperienceManager />} />
-            <Route path="testimonials" element={<TestimonialsManager />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="profile" element={<ProfileManager />} />
+                <Route path="social" element={<SocialManager />} />
+                <Route path="skills" element={<SkillsManager />} />
+                <Route path="projects" element={<ProjectsManager />} />
+                <Route path="experience" element={<ExperienceManager />} />
+                <Route path="testimonials" element={<TestimonialsManager />} />
+              </Route>
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

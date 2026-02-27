@@ -23,6 +23,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const menuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
@@ -39,6 +40,7 @@ const menuItems = [
 ];
 
 const AdminSidebar = () => {
+  const { logout } = useAuth();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
@@ -85,12 +87,10 @@ const AdminSidebar = () => {
           variant="ghost"
           size="sm"
           className="w-full justify-start text-muted-foreground hover:text-destructive"
-          asChild
+          onClick={logout}
         >
-          <a href="/admin/login">
-            <LogOut className="mr-2 h-4 w-4" />
-            {!collapsed && "Cerrar sesión"}
-          </a>
+          <LogOut className="mr-2 h-4 w-4" />
+          {!collapsed && "Cerrar sesión"}
         </Button>
       </SidebarFooter>
     </Sidebar>
