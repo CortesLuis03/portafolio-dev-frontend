@@ -1,73 +1,114 @@
-# Welcome to your Lovable project
+# 🚀 Fullstack Dev Portfolio & Admin CMS
 
-## Project info
+![Portfolio Hero Banner](./portfolio_hero_banner.png)
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+> **Una solución integral para desarrolladores:** Un portafolio moderno y dinámico acoplado a un potente sistema de gestión de contenidos (CMS) para administrar tu presencia profesional sin tocar una línea de código.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## ✨ Características Principales
 
-**Use Lovable**
+| Característica                 | Descripción                                                                                            |
+| :----------------------------- | :----------------------------------------------------------------------------------------------------- |
+| **🖥️ Dashboard Admin**         | Gestión completa de proyectos, habilidades, experiencia y testimonios mediante una interfaz intuitiva. |
+| **⚡ API de Alto Rendimiento** | Backend construido con Laravel Lumen, optimizado para una entrega de datos ultrarrápida.               |
+| **🐳 Arquitectura Docker**     | Entorno persistente y unificado mediante contenedores Docker para un despliegue sin fricciones.        |
+| **🔷 React & TypeScript**      | Código tipado y escalable con hooks personalizados y gestión de estado con TanStack Query.             |
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠 Tech Stack
 
-**Use your preferred IDE**
+| Componente        | Tecnología               | Uso Principal                |
+| :---------------- | :----------------------- | :--------------------------- |
+| **Frontend**      | React 18 / Vite          | Core Framework               |
+| **Styling**       | Tailwind CSS / shadcn/ui | Sistema de Diseño e Interfaz |
+| **Backend**       | PHP 8.1 / Lumen 9        | RESTful API & Business Logic |
+| **Base de Datos** | MySQL / PostgreSQL       | Almacenamiento Persistente   |
+| **Herramientas**  | Docker / NPM / Composer  | DevOps & Package Management  |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🏗 Arquitectura del Sistema
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```mermaid
+graph TD
+    User((Usuario)) --> FE[Frontend React]
+    FE --> API[Lumen REST API]
+    API --> DB[(Database)]
+    Admin((Administrador)) --> FE_Admin[Admin Dashboard]
+    FE_Admin --> API
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📂 Estructura del Proyecto (Frontend)
 
-**Use GitHub Codespaces**
+- `src/components/` - Componentes atómicos y de UI (shadcn/ui).
+- `src/pages/` - Vistas principales y panel de administración.
+- `src/services/` - Capa de comunicación con la API (Axios).
+- `src/layouts/` - Estructuras de página compartidas.
+- `src/hooks/` - Lógica de negocio reutilizable.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 🚀 Instalación y Configuración
 
-This project is built with:
+### 🐳 Opción 1: Docker (Recomendado)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Si tienes Docker instalado, puedes levantar ambos servicios con un solo comando:
 
-## How can I deploy this project?
+```bash
+docker-compose up -d --build
+```
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+### 🛠 Opción 2: Manual
 
-## Can I connect a custom domain to my Lovable project?
+#### 1. Backend (Lumen)
 
-Yes, you can!
+1. Navega a `portafolio-dev-backend/`
+2. Instala dependencias: `composer install`
+3. Configura el `.env`: `cp .env.example .env`
+4. Inicia el servidor: `php -S localhost:8000 -t public`
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+#### 2. Frontend (React)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+1. Navega a `portafolio-dev-frontend/`
+2. Instala dependencias: `npm install`
+3. Configura el `.env`: Define `VITE_API_URL=http://localhost:8000/api/v1`
+4. Inicia el servidor: `npm run dev`
+
+---
+
+## 📡 Endpoints de la API (v1)
+
+> Todas las rutas están bajo el prefijo `/api/v1`
+
+- `GET /configs` - Obtiene la configuración global del sitio.
+- `GET /skills` - Lista todas las habilidades técnicas.
+- `GET /social-networks` - Obtiene los enlaces a redes sociales.
+- `GET /skills-category/get-skills` - Obtiene habilidades agrupadas por categoría.
+
+---
+
+## 🤝 Contribución
+
+¡Las contribuciones son bienvenidas!
+
+1. Haz un **Fork** del proyecto.
+2. Crea una **rama** para tu feature: `git checkout -b feature/NuevaMejora`
+3. Realiza tus **commits**: `git commit -m 'Añade una mejora increíble'`
+4. Sube la rama: `git push origin feature/NuevaMejora`
+5. Abre un **Pull Request**.
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia **MIT**. Consulta el archivo `LICENSE` para más detalles.
+
+---
+
+<p align="center">
+  Hecho con ❤️ por <b>CortesLuis03</b>
+</p>
