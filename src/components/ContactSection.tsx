@@ -26,7 +26,7 @@ const ContactSection = () => {
           viewport={{ once: true }}
           className="mb-12 text-center"
         >
-          <p className="font-mono text-sm text-primary mb-2">{"// 04"}</p>
+          <p className="font-mono text-sm text-primary mb-2">{"// 05"}</p>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Contacto</h2>
           <p className="text-muted-foreground">
             ¿Tienes un proyecto en mente? Hablemos.

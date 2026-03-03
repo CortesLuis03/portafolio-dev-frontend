@@ -1,9 +1,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Pencil, Trash2, X, Save } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Save,
+  Tags,
+  Code2,
+  GripVertical,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -16,62 +25,110 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
-
-interface Skill {
-  id: number;
-  name: string;
-  icon: string;
-  category: string;
-}
-
-const initialSkills: Skill[] = [
-  { id: 1, name: "React", icon: "react", category: "Frontend" },
-  { id: 2, name: "TypeScript", icon: "typescript", category: "Frontend" },
-  { id: 3, name: "TailwindCSS", icon: "tailwindcss", category: "Frontend" },
-  { id: 4, name: "Node.js", icon: "nodejs", category: "Backend" },
-  { id: 5, name: "PostgreSQL", icon: "postgresql", category: "Backend" },
-  { id: 6, name: "Docker", icon: "docker", category: "DevOps" },
-];
-
-const categories = ["Frontend", "Backend", "DevOps"];
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSkills } from "@/hooks/useSkills";
+import { useSkillsCategory } from "@/hooks/useSkillsCategory";
+import { Skill, SkillCategory } from "@/services/skills-category.service";
 
 const SkillsManager = () => {
-  const [skills, setSkills] = useState<Skill[]>(initialSkills);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Skill | null>(null);
-  const [form, setForm] = useState({
+  const {
+    skillsQuery,
+    createMutation: createSkill,
+    updateMutation: updateSkill,
+    deleteMutation: deleteSkill,
+  } = useSkills();
+  const {
+    categories: categoriesQuery,
+    createMutation: createCat,
+    updateMutation: updateCat,
+    deleteMutation: deleteCat,
+  } = useSkillsCategory();
+
+  const [activeTab, setActiveTab] = useState("skills");
+  const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
+  const [isCatDialogOpen, setIsCatDialogOpen] = useState(false);
+
+  const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
+  const [skillForm, setSkillForm] = useState<Partial<Skill>>({
     name: "",
     icon: "",
-    category: "Frontend",
+    category_id: undefined,
+    order: 0,
+    is_active: true,
   });
 
-  const openNew = () => {
-    setEditing(null);
-    setForm({ name: "", icon: "", category: "Frontend" });
-    setDialogOpen(true);
-  };
+  const [editingCat, setEditingCat] = useState<SkillCategory | null>(null);
+  const [catForm, setCatForm] = useState<Partial<SkillCategory>>({
+    name: "",
+    icon: "",
+    order: 0,
+    is_active: true,
+  });
 
-  const openEdit = (skill: Skill) => {
-    setEditing(skill);
-    setForm({ name: skill.name, icon: skill.icon, category: skill.category });
-    setDialogOpen(true);
-  };
-
-  const handleSave = () => {
-    if (editing) {
-      setSkills(
-        skills.map((s) => (s.id === editing.id ? { ...s, ...form } : s)),
-      );
+  const handleOpenSkillDialog = (skill: Skill | null = null) => {
+    if (skill) {
+      setEditingSkill(skill);
+      setSkillForm(skill);
     } else {
-      setSkills([...skills, { id: Date.now(), ...form }]);
+      setEditingSkill(null);
+      setSkillForm({
+        name: "",
+        icon: "",
+        category_id: categoriesQuery.data?.[0]?.id,
+        order: 0,
+        is_active: true,
+      });
     }
-    setDialogOpen(false);
+    setIsSkillDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setSkills(skills.filter((s) => s.id !== id));
+  const handleOpenCatDialog = (cat: SkillCategory | null = null) => {
+    if (cat) {
+      setEditingCat(cat);
+      setCatForm(cat);
+    } else {
+      setEditingCat(null);
+      setCatForm({ name: "", icon: "", order: 0, is_active: true });
+    }
+    setIsCatDialogOpen(true);
   };
+
+  const handleSkillSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingSkill?.id) {
+      await updateSkill.mutateAsync({ id: editingSkill.id, data: skillForm });
+    } else {
+      await createSkill.mutateAsync(skillForm);
+    }
+    setIsSkillDialogOpen(false);
+  };
+
+  const handleCatSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingCat?.id) {
+      await updateCat.mutateAsync({ id: editingCat.id, data: catForm });
+    } else {
+      await createCat.mutateAsync(catForm);
+    }
+    setIsCatDialogOpen(false);
+  };
+
+  if (skillsQuery.isLoading || categoriesQuery.isLoading)
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        Cargando datos...
+      </div>
+    );
 
   return (
     <motion.div
@@ -79,119 +136,347 @@ const SkillsManager = () => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Skills</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Gestiona tus tecnologías y habilidades
-          </p>
-        </div>
-        <Button onClick={openNew}>
-          <Plus className="mr-2 h-4 w-4" /> Agregar
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">
+          Skills & Categorías
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Gestiona tus habilidades técnicas organizadas por categorías
+        </p>
       </div>
 
-      {categories.map((cat) => {
-        const catSkills = skills.filter((s) => s.category === cat);
-        if (!catSkills.length) return null;
-        return (
-          <div key={cat}>
-            <h2 className="text-sm font-mono text-primary mb-3">{cat}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {catSkills.map((skill) => (
-                <div
-                  key={skill.id}
-                  className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={`https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${skill.icon}/${skill.icon}-original.svg`}
-                      alt={skill.name}
-                      className="w-6 h-6"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                    <span className="text-sm font-medium text-foreground">
-                      {skill.name}
-                    </span>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => openEdit(skill)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive"
-                      onClick={() => handleDelete(skill.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="skills" className="flex items-center gap-2">
+            <Code2 className="h-4 w-4" /> Skills
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="flex items-center gap-2">
+            <Tags className="h-4 w-4" /> Categorías
+          </TabsTrigger>
+        </TabsList>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <TabsContent value="skills" className="space-y-6">
+          <div className="flex justify-end">
+            <Button onClick={() => handleOpenSkillDialog()}>
+              <Plus className="mr-2 h-4 w-4" /> Agregar Skill
+            </Button>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead>Skill</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.isArray(skillsQuery.data) &&
+                  skillsQuery.data.map((skill) => (
+                    <TableRow key={skill.id}>
+                      <TableCell>
+                        <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded border border-border bg-surface p-1 flex items-center justify-center">
+                            <img
+                              src={skill.icon}
+                              alt={skill.name}
+                              className="w-full h-full object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  "https://via.placeholder.com/32";
+                              }}
+                            />
+                          </div>
+                          <span className="font-medium">{skill.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                          {skill.category?.name || "Sin categoría"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${skill.is_active ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"}`}
+                        >
+                          {skill.is_active ? "Activo" : "Inactivo"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenSkillDialog(skill)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:bg-destructive/10"
+                            onClick={() => deleteSkill.mutate(skill.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="categories" className="space-y-6">
+          <div className="flex justify-end">
+            <Button onClick={() => handleOpenCatDialog()}>
+              <Plus className="mr-2 h-4 w-4" /> Agregar Categoría
+            </Button>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Orden</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.isArray(categoriesQuery.data) &&
+                  categoriesQuery.data.map((cat) => (
+                    <TableRow key={cat.id}>
+                      <TableCell>
+                        <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
+                      </TableCell>
+                      <TableCell className="font-medium">{cat.name}</TableCell>
+                      <TableCell>{cat.order}</TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cat.is_active ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"}`}
+                        >
+                          {cat.is_active ? "Activo" : "Inactivo"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenCatDialog(cat)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:bg-destructive/10"
+                            onClick={() => deleteCat.mutate(cat.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Skill Dialog */}
+      <Dialog open={isSkillDialogOpen} onOpenChange={setIsSkillDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editing ? "Editar Skill" : "Nuevo Skill"}
+              {editingSkill ? "Editar Skill" : "Agregar Skill"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label>Nombre</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="React"
-              />
+          <form onSubmit={handleSkillSubmit} className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="s-name">Nombre</Label>
+                <Input
+                  id="s-name"
+                  value={skillForm.name}
+                  onChange={(e) =>
+                    setSkillForm({
+                      ...skillForm,
+                      name: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <Label>Icono (devicon slug)</Label>
-              <Input
-                value={form.icon}
-                onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                placeholder="react"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Categoría</Label>
+              <Label htmlFor="s-cat">Categoría</Label>
               <Select
-                value={form.category}
-                onValueChange={(v) => setForm({ ...form, category: v })}
+                value={skillForm.category_id?.toString()}
+                onValueChange={(v) =>
+                  setSkillForm({ ...skillForm, category_id: parseInt(v) })
+                }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Selecciona una categoría" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
+                  {Array.isArray(categoriesQuery.data) &&
+                    categoriesQuery.data.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id.toString()}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <div className="space-y-2">
+              <Label htmlFor="s-icon">URL Icono (SVG/PNG)</Label>
+              <Input
+                id="s-icon"
+                value={skillForm.icon}
+                onChange={(e) =>
+                  setSkillForm({ ...skillForm, icon: e.target.value })
+                }
+                placeholder="https://..."
+                required
+              />
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="s-order">Orden</Label>
+                <Input
+                  id="s-order"
+                  type="number"
+                  value={skillForm.order}
+                  onChange={(e) =>
+                    setSkillForm({
+                      ...skillForm,
+                      order: parseInt(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div className="flex items-center space-x-2 pt-6">
+                <Switch
+                  id="s-active"
+                  checked={skillForm.is_active}
+                  onCheckedChange={(v) =>
+                    setSkillForm({ ...skillForm, is_active: v })
+                  }
+                />
+                <Label htmlFor="s-active">Activo</Label>
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsSkillDialogOpen(false)}
+              >
                 Cancelar
               </Button>
-              <Button onClick={handleSave}>
-                <Save className="mr-2 h-4 w-4" /> Guardar
-              </Button>
+              <Button type="submit">Guardar</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Category Dialog */}
+      <Dialog open={isCatDialogOpen} onOpenChange={setIsCatDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingCat ? "Editar Categoría" : "Agregar Categoría"}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCatSubmit} className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="c-name">Nombre</Label>
+                <Input
+                  id="c-name"
+                  value={catForm.name}
+                  onChange={(e) =>
+                    setCatForm({
+                      ...catForm,
+                      name: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="c-slug">Slug</Label>
+                <Input
+                  id="c-slug"
+                  value={catForm.slug}
+                  onChange={(e) =>
+                    setCatForm({
+                      ...catForm,
+                      slug: e.target.value.toUpperCase().replace(/ /g, "-"),
+                    })
+                  }
+                  required
+                />
+              </div>
             </div>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="c-icon">Icono (Opcional)</Label>
+              <Input
+                id="c-icon"
+                value={catForm.icon}
+                onChange={(e) =>
+                  setCatForm({ ...catForm, icon: e.target.value })
+                }
+                placeholder="lucide icon name or url"
+              />
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="c-order">Orden</Label>
+                <Input
+                  id="c-order"
+                  type="number"
+                  value={catForm.order}
+                  onChange={(e) =>
+                    setCatForm({ ...catForm, order: parseInt(e.target.value) })
+                  }
+                />
+              </div>
+              <div className="flex items-center space-x-2 pt-6">
+                <Switch
+                  id="c-active"
+                  checked={catForm.is_active}
+                  onCheckedChange={(v) =>
+                    setCatForm({ ...catForm, is_active: v })
+                  }
+                />
+                <Label htmlFor="c-active">Activo</Label>
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsCatDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit">Guardar</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </motion.div>

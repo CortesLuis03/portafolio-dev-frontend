@@ -29,7 +29,7 @@ const TestimonialsSection = () => {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <p className="font-mono text-sm text-primary mb-2">{"// 03"}</p>
+          <p className="font-mono text-sm text-primary mb-2">{"// 04"}</p>
           <h2 className="text-3xl md:text-4xl font-bold">Recomendaciones</h2>
         </motion.div>
 
