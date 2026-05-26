@@ -1,3 +1,5 @@
+import { Terminal, Code, Cpu, Globe, Layout, Database } from "lucide-react";
+
 # 🚀 Fullstack Dev Portfolio & Admin CMS
 
 ![Portfolio Hero Banner](./portfolio_hero_banner.png)
@@ -8,12 +10,48 @@
 
 ## ✨ Características Principales
 
-| Característica                 | Descripción                                                                                            |
-| :----------------------------- | :----------------------------------------------------------------------------------------------------- |
-| **🖥️ Dashboard Admin**         | Gestión completa de proyectos, habilidades, experiencia laboral, testimonios, perfil y redes sociales. |
-| **⚡ API RESTful**             | Backend construido con Laravel Lumen con autenticación JWT y operaciones CRUD completas.               |
-| **🐳 Arquitectura Docker**     | Entorno de producción unificado mediante contenedor Docker con Nginx para el frontend.                 |
-| **🔷 React & TypeScript**      | Componentes reutilizables con shadcn/ui, hooks personalizados y TanStack Query.                        |
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+  <div className="p-4 border rounded-xl bg-card">
+    <div className="flex items-center gap-2 mb-2">
+      <Layout className="w-5 h-5 text-blue-500" />
+      <h3 className="font-bold">Dashboard Administrativo</h3>
+    </div>
+    <p className="text-sm opacity-80">
+      Gestión completa de proyectos, habilidades, experiencia laboral,
+      testimonios, perfil y redes sociales mediante shadcn/ui.
+    </p>
+  </div>
+  <div className="p-4 border rounded-xl bg-card">
+    <div className="flex items-center gap-2 mb-2">
+      <Cpu className="w-5 h-5 text-purple-500" />
+      <h3 className="font-bold">API RESTful con JWT</h3>
+    </div>
+    <p className="text-sm opacity-80">
+      Backend construido con Laravel Lumen con autenticación JWT
+      y operaciones CRUD completas para todos los recursos.
+    </p>
+  </div>
+  <div className="p-4 border rounded-xl bg-card">
+    <div className="flex items-center gap-2 mb-2">
+      <Globe className="w-5 h-5 text-green-500" />
+      <h3 className="font-bold">Arquitectura Dockerizada</h3>
+    </div>
+    <p className="text-sm opacity-80">
+      Entorno de producción unificado mediante contenedor Docker con Nginx
+      para el frontend.
+    </p>
+  </div>
+  <div className="p-4 border rounded-xl bg-card">
+    <div className="flex items-center gap-2 mb-2">
+      <Code className="w-5 h-5 text-orange-500" />
+      <h3 className="font-bold">React & TypeScript</h3>
+    </div>
+    <p className="text-sm opacity-80">
+      Componentes reutilizables con shadcn/ui, hooks personalizados
+      y gestión de estado con TanStack Query.
+    </p>
+  </div>
+</div>
 
 ---
 
@@ -25,7 +63,7 @@
 | **Styling**       | Tailwind CSS / shadcn/ui | Sistema de Diseño e Interfaz |
 | **Backend**       | PHP 8.1 / Lumen 9        | RESTful API & Business Logic |
 | **Base de Datos** | MySQL                    | Almacenamiento Persistente   |
-| **Herramientas**  | Docker / NPM / Composer  | DevOps & Package Management  |
+| **Tools**         | Docker / Composer / NPM  | DevOps & Package Management  |
 
 ---
 
@@ -42,7 +80,10 @@ graph TD
 
 ---
 
-## 📂 Estructura del Proyecto (Frontend)
+## 📂 Estructura del Proyecto
+
+<details>
+<summary>📂 <b>Frontend (portafolio-dev-frontend)</b></summary>
 
 - `src/components/` - Componentes de UI (Hero, Projects, Skills, Experience, etc.).
 - `src/components/ui/` - Componentes base de shadcn/ui.
@@ -53,6 +94,16 @@ graph TD
 - `src/hooks/` - Lógica reutilizable (auth, skills, configs, section counter, etc.).
 - `src/layouts/` - Estructuras de página compartidas (AdminLayout).
 - `src/config/` - Configuración de entorno (env).
+  </details>
+
+<details>
+<summary>📂 <b>Backend (portafolio-dev-backend)</b></summary>
+
+- `app/Http/Controllers/` - Lógica de control de endpoints.
+- `app/Models/` - Modelos de Eloquent para la base de datos.
+- `routes/web.php` - Definición de rutas y prefijos de API.
+- `database/migrations/` - Esquema de la base de datos.
+  </details>
 
 ---
 
@@ -137,13 +188,13 @@ docker compose up -d --build
 
 ## 🤝 Contribución
 
-¡Las contribuciones son bienvenidas!
+¡Las contribuciones son bienvenidas! Por favor, abre un Issue para discutir cambios antes de enviar un Pull Request.
 
-1. Haz un **Fork** del proyecto.
-2. Crea una **rama** para tu feature: `git checkout -b feature/NuevaMejora`
-3. Realiza tus **commits**: `git commit -m 'Añade una mejora increíble'`
-4. Sube la rama: `git push origin feature/NuevaMejora`
-5. Abre un **Pull Request**.
+1. Haz un Fork del proyecto.
+2. Crea una rama para tu feature: `git checkout -b feature/AmazingFeature`
+3. Haz commit de tus cambios: `git commit -m 'Add some AmazingFeature'`
+4. Sube la rama: `git push origin feature/AmazingFeature`
+5. Abre un PR.
 
 ---
 

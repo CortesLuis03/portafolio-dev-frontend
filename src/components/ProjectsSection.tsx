@@ -1,46 +1,57 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Github, ExternalLink } from "lucide-react";
-
-const projects = [
-  {
-    title: "E-Commerce Platform",
-    description:
-      "Plataforma de comercio electrónico full-stack con pasarela de pagos, gestión de inventario y panel administrativo.",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop",
-    tags: ["React", "Node.js", "PostgreSQL", "Stripe"],
-    repo: "#",
-    demo: "#",
-  },
-  {
-    title: "Task Management App",
-    description:
-      "Aplicación de gestión de tareas en tiempo real con drag & drop, asignación de equipo y notificaciones.",
-    image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop",
-    tags: ["Next.js", "TypeScript", "Prisma", "WebSockets"],
-    repo: "#",
-    demo: "#",
-  },
-  {
-    title: "Analytics Dashboard",
-    description:
-      "Dashboard interactivo de analíticas con visualizaciones de datos en tiempo real y reportes exportables.",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
-    tags: ["React", "D3.js", "Express", "MongoDB"],
-    repo: "#",
-    demo: null,
-  },
-  {
-    title: "DevOps Pipeline Tool",
-    description:
-      "Herramienta de automatización CI/CD con monitoreo de contenedores, logs centralizados y alertas configurables.",
-    image: "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=600&h=400&fit=crop",
-    tags: ["Docker", "GitHub Actions", "Nginx", "Linux"],
-    repo: "#",
-    demo: "#",
-  },
-];
+import { fetchFeaturedProjects } from "@/services/featured-projects.service";
+import { FeaturedProject } from "@/services/types";
+import { useSectionCounter } from "@/hooks/useSectionCounter";
 
 const ProjectsSection = () => {
+  const [projects, setProjects] = useState<FeaturedProject[]>([]);
+  const [loading, setLoading] = useState(true);
+  const hasContent = !loading && projects.length > 0;
+  const { counter, ref } = useSectionCounter("projects", hasContent);
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const data = await fetchFeaturedProjects();
+        setProjects(data.filter((p: FeaturedProject) => p.is_active).sort((a, b) => a.order - b.order));
+      } catch (error) {
+        console.error("Error loading projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProjects();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="projects" ref={ref} className="section-padding bg-card">
+        <div className="container mx-auto">
+          <div className="mb-16">
+            <p className="font-mono text-sm text-primary mb-2">{`// ${counter}`}</p>
+            <h2 className="text-3xl md:text-4xl font-bold">Proyectos Destacados</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-xl border border-border bg-background overflow-hidden animate-pulse">
+                <div className="h-48 bg-muted" />
+                <div className="p-6 space-y-3">
+                  <div className="h-5 bg-muted rounded w-3/4" />
+                  <div className="h-4 bg-muted rounded w-full" />
+                  <div className="h-4 bg-muted rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (projects.length === 0) return null;
+
   return (
     <section id="projects" className="section-padding bg-card">
       <div className="container mx-auto">
@@ -50,7 +61,7 @@ const ProjectsSection = () => {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <p className="font-mono text-sm text-primary mb-2">{"// 02"}</p>
+          <p className="font-mono text-sm text-primary mb-2">{`// ${counter}`}</p>
           <h2 className="text-3xl md:text-4xl font-bold">
             Proyectos Destacados
           </h2>
@@ -59,14 +70,13 @@ const ProjectsSection = () => {
         <div className="grid md:grid-cols-2 gap-6">
           {projects.map((project, idx) => (
             <motion.div
-              key={project.title}
+              key={project.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
               className="group rounded-xl border border-border bg-background overflow-hidden hover:border-primary/30 transition-all duration-300"
             >
-              {/* Image */}
               <div className="relative overflow-hidden h-48">
                 <img
                   src={project.image}
@@ -76,11 +86,10 @@ const ProjectsSection = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
 
-                {/* Links overlay */}
                 <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {project.repo && (
+                  {project.github_url && (
                     <a
-                      href={project.repo}
+                      href={project.github_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`Repositorio de ${project.title}`}
@@ -89,9 +98,9 @@ const ProjectsSection = () => {
                       <Github size={16} className="text-foreground" />
                     </a>
                   )}
-                  {project.demo && (
+                  {project.url && (
                     <a
-                      href={project.demo}
+                      href={project.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`Demo de ${project.title}`}
@@ -103,7 +112,6 @@ const ProjectsSection = () => {
                 </div>
               </div>
 
-              {/* Content */}
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   {project.title}
@@ -112,12 +120,12 @@ const ProjectsSection = () => {
                   {project.description}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {project.tags.map((tag) => (
+                  {project.technologies.split(",").map((tag) => (
                     <span
-                      key={tag}
+                      key={tag.trim()}
                       className="px-2.5 py-1 text-xs font-mono rounded-md bg-secondary text-secondary-foreground"
                     >
-                      {tag}
+                      {tag.trim()}
                     </span>
                   ))}
                 </div>

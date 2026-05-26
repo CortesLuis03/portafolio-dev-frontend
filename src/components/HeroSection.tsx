@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
-import { ArrowDown, Github, Linkedin, Mail } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import { useConfigs } from "@/hooks/useConfigs";
 import { useSocialNetworks } from "@/hooks/useSocialNetworks";
 
 const HeroSection = () => {
-
   const { data, isLoading, isError, error } = useConfigs();
   const { data: socialNetworks } = useSocialNetworks();
 
@@ -15,7 +14,7 @@ const HeroSection = () => {
 
   if (isError) {
     return <div>Error: {error.message}</div>;
-  } 
+  }
 
   const { full_name, profile, about } = data;
 
@@ -66,7 +65,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="max-w-xl mx-auto text-secondary-foreground mb-12 leading-relaxed"
+          className="max-w-xl md:max-w-3xl mx-auto text-secondary-foreground mb-12 leading-relaxed"
         >
           {about}
         </motion.p>
@@ -77,16 +76,19 @@ const HeroSection = () => {
           transition={{ delay: 1 }}
           className="flex items-center justify-center gap-6 mb-16"
         >
-          {socialNetworks?.map(({ icon, url, name }) => (
+          {socialNetworks?.map(({ id, icon, url, name }) => (
             <a
-              key={name}
+              key={id}
               href={url}
               aria-label={name}
               className="p-3 rounded-lg border border-border bg-surface hover:bg-surface-hover hover:border-primary/50 transition-all duration-300"
               target={name === "Email" ? "_self" : "_blank"}
             >
               <div className="w-8 h-8">
-                <img src={icon} className="w-8 h-8 object-contain grayscale brightness-0 invert" />
+                <img
+                  src={icon}
+                  className="w-8 h-8 object-contain grayscale brightness-0 invert"
+                />
               </div>
             </a>
           ))}

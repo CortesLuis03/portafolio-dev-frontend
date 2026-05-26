@@ -70,6 +70,11 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'JetBrains Mono', monospace;
   }
+
+  input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) hue-rotate(180deg);
+    opacity: 0.8;
+  }
 }
 
 @layer utilities {

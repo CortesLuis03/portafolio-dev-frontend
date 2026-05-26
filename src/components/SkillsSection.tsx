@@ -1,11 +1,38 @@
 import { useSkillsCategory } from "@/hooks/useSkillsCategory";
+import { useSectionCounter } from "@/hooks/useSectionCounter";
 import { motion } from "framer-motion";
 
 const SkillsSection = () => {
   const { data: skills, isLoading, error } = useSkillsCategory();
+  const hasContent = !isLoading && !error && skills && skills.length > 0;
+  const { counter, ref } = useSectionCounter("skills", hasContent);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <section id="skills" ref={ref} className="section-padding bg-background">
+        <div className="container mx-auto">
+          <div className="mb-16">
+            <p className="font-mono text-sm text-primary mb-2">{`// ${counter}`}</p>
+            <h2 className="text-3xl md:text-4xl font-bold">Stack Tecnológico</h2>
+          </div>
+          <div className="flex flex-wrap justify-center gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-6 w-full md:w-[calc(33.333%-1.5rem)] animate-pulse">
+                <div className="h-4 bg-muted rounded w-1/3 mb-6" />
+                <div className="grid grid-cols-3 gap-4">
+                  {[1, 2, 3, 4, 5, 6].map((j) => (
+                    <div key={j} className="flex flex-col items-center gap-2 p-2">
+                      <div className="w-8 h-8 bg-muted rounded-full" />
+                      <div className="h-3 bg-muted rounded w-12" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
   }
 
   if (error) {
@@ -13,7 +40,7 @@ const SkillsSection = () => {
   }
 
   return (
-    <section id="skills" className="section-padding bg-background">
+    <section id="skills" ref={ref} className="section-padding bg-background">
       <div className="container mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -21,7 +48,7 @@ const SkillsSection = () => {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <p className="font-mono text-sm text-primary mb-2">{"// 01"}</p>
+          <p className="font-mono text-sm text-primary mb-2">{`// ${counter}`}</p>
           <h2 className="text-3xl md:text-4xl font-bold">Stack Tecnológico</h2>
         </motion.div>
 

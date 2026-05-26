@@ -29,10 +29,11 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copiar template env
 COPY env.template.js /usr/share/nginx/html/env.template.js
 
-# Copiar entrypoint
+# Copiar entrypoint y limpiar saltos de línea Windows
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh && \
+    sed -i 's/\r$//' /docker-entrypoint.sh
 
 EXPOSE 80
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/docker-entrypoint.sh"]
