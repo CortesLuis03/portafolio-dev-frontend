@@ -10,10 +10,10 @@
 
 | Característica                 | Descripción                                                                                            |
 | :----------------------------- | :----------------------------------------------------------------------------------------------------- |
-| **🖥️ Dashboard Admin**         | Gestión completa de proyectos, habilidades, experiencia y testimonios mediante una interfaz intuitiva. |
-| **⚡ API de Alto Rendimiento** | Backend construido con Laravel Lumen, optimizado para una entrega de datos ultrarrápida.               |
-| **🐳 Arquitectura Docker**     | Entorno persistente y unificado mediante contenedores Docker para un despliegue sin fricciones.        |
-| **🔷 React & TypeScript**      | Código tipado y escalable con hooks personalizados y gestión de estado con TanStack Query.             |
+| **🖥️ Dashboard Admin**         | Gestión completa de proyectos, habilidades, experiencia laboral, testimonios, perfil y redes sociales. |
+| **⚡ API RESTful**             | Backend construido con Laravel Lumen con autenticación JWT y operaciones CRUD completas.               |
+| **🐳 Arquitectura Docker**     | Entorno de producción unificado mediante contenedor Docker con Nginx para el frontend.                 |
+| **🔷 React & TypeScript**      | Componentes reutilizables con shadcn/ui, hooks personalizados y TanStack Query.                        |
 
 ---
 
@@ -24,7 +24,7 @@
 | **Frontend**      | React 18 / Vite          | Core Framework               |
 | **Styling**       | Tailwind CSS / shadcn/ui | Sistema de Diseño e Interfaz |
 | **Backend**       | PHP 8.1 / Lumen 9        | RESTful API & Business Logic |
-| **Base de Datos** | MySQL / PostgreSQL       | Almacenamiento Persistente   |
+| **Base de Datos** | MySQL                    | Almacenamiento Persistente   |
 | **Herramientas**  | Docker / NPM / Composer  | DevOps & Package Management  |
 
 ---
@@ -35,7 +35,7 @@
 graph TD
     User((Usuario)) --> FE[Frontend React]
     FE --> API[Lumen REST API]
-    API --> DB[(Database)]
+    API --> DB[(MySQL Database)]
     Admin((Administrador)) --> FE_Admin[Admin Dashboard]
     FE_Admin --> API
 ```
@@ -44,11 +44,15 @@ graph TD
 
 ## 📂 Estructura del Proyecto (Frontend)
 
-- `src/components/` - Componentes atómicos y de UI (shadcn/ui).
-- `src/pages/` - Vistas principales y panel de administración.
-- `src/services/` - Capa de comunicación con la API (Axios).
-- `src/layouts/` - Estructuras de página compartidas.
-- `src/hooks/` - Lógica de negocio reutilizable.
+- `src/components/` - Componentes de UI (Hero, Projects, Skills, Experience, etc.).
+- `src/components/ui/` - Componentes base de shadcn/ui.
+- `src/components/admin/` - Componentes compartidos del panel admin.
+- `src/pages/` - Vistas principales (Index, NotFound, AdminLogin).
+- `src/pages/admin/` - CRUD managers: Dashboard, Profile, Projects, Skills, Experience, Testimonials, Social.
+- `src/services/` - Capa de comunicación con la API (Axios + servicios por recurso).
+- `src/hooks/` - Lógica reutilizable (auth, skills, configs, section counter, etc.).
+- `src/layouts/` - Estructuras de página compartidas (AdminLayout).
+- `src/config/` - Configuración de entorno (env).
 
 ---
 
@@ -56,26 +60,26 @@ graph TD
 
 ### 🐳 Opción 1: Docker (Recomendado)
 
-Si tienes Docker instalado, puedes levantar ambos servicios con un solo comando:
-
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
+
+> El contenedor sirve el frontend en `http://localhost:3000`. Asegúrate de tener el backend corriendo en `http://localhost:8080`.
 
 ### 🛠 Opción 2: Manual
 
-#### 1. Backend (Lumen)
+#### Backend (Lumen)
 
-1. Navega a `portafolio-dev-backend/`
+1. Clona y navega a `portafolio-dev-backend/`
 2. Instala dependencias: `composer install`
 3. Configura el `.env`: `cp .env.example .env`
-4. Inicia el servidor: `php -S localhost:8000 -t public`
+4. Inicia el servidor: `php -S localhost:8080 -t public`
 
-#### 2. Frontend (React)
+#### Frontend (React)
 
 1. Navega a `portafolio-dev-frontend/`
 2. Instala dependencias: `npm install`
-3. Configura el `.env`: Define `VITE_API_URL=http://localhost:8000/api/v1`
+3. Configura el `.env`: Define `VITE_API_URL=http://localhost:8080/api/v1`
 4. Inicia el servidor: `npm run dev`
 
 ---
@@ -84,10 +88,50 @@ docker-compose up -d --build
 
 > Todas las rutas están bajo el prefijo `/api/v1`
 
-- `GET /configs` - Obtiene la configuración global del sitio.
-- `GET /skills` - Lista todas las habilidades técnicas.
-- `GET /social-networks` - Obtiene los enlaces a redes sociales.
-- `GET /skills-category/get-skills` - Obtiene habilidades agrupadas por categoría.
+### Autenticación
+- `POST /auth/login` - Inicia sesión y obtiene token JWT.
+- `GET /auth/me` - Obtiene datos del usuario autenticado.
+
+### Configuración
+- `GET /configs/get` - Obtiene la configuración global del sitio.
+- `POST /configs/update` - Actualiza la configuración del perfil.
+
+### Proyectos Destacados
+- `GET /featured-projects` - Lista todos los proyectos.
+- `POST /featured-projects` - Crea un nuevo proyecto.
+- `PUT /featured-projects/:id` - Actualiza un proyecto.
+- `DELETE /featured-projects/:id` - Elimina un proyecto.
+
+### Habilidades
+- `GET /skills` - Lista todas las habilidades.
+- `POST /skills` - Crea una habilidad.
+- `PUT /skills/:id` - Actualiza una habilidad.
+- `DELETE /skills/:id` - Elimina una habilidad.
+
+### Categorías de Habilidades
+- `GET /skills-category` - Lista todas las categorías.
+- `GET /skills-category/get-skills` - Habilidades agrupadas por categoría.
+- `POST /skills-category` - Crea una categoría.
+- `PUT /skills-category/:id` - Actualiza una categoría.
+- `DELETE /skills-category/:id` - Elimina una categoría.
+
+### Experiencia Laboral
+- `GET /work-experiences` - Lista todas las experiencias.
+- `POST /work-experiences` - Crea una experiencia.
+- `PUT /work-experiences/:id` - Actualiza una experiencia.
+- `DELETE /work-experiences/:id` - Elimina una experiencia.
+
+### Testimonios
+- `GET /testimonials` - Lista todos los testimonios.
+- `POST /testimonials` - Crea un testimonio.
+- `PUT /testimonials/:id` - Actualiza un testimonio.
+- `DELETE /testimonials/:id` - Elimina un testimonio.
+
+### Redes Sociales
+- `GET /social-networks/get` - Obtiene los enlaces a redes sociales.
+- `POST /social-networks` - Crea una red social.
+- `PUT /social-networks/:id` - Actualiza una red social.
+- `DELETE /social-networks/:id` - Elimina una red social.
 
 ---
 

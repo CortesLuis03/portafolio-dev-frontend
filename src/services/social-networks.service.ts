@@ -1,11 +1,5 @@
 import { api } from "./api";
-
-export interface SocialNetwork {
-  id?: number;
-  name: string;
-  url: string;
-  icon: string;
-}
+import { SocialNetwork } from "./types";
 
 export const fetchSocialNetworks = async (): Promise<SocialNetwork[]> => {
   const { data } = await api.get("/social-networks/get");

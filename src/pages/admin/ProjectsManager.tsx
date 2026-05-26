@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Pencil, Trash2, ExternalLink, Github, Save } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, ExternalLink, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,52 +11,44 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-interface Project {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  tags: string;
-  repo: string;
-  demo: string;
-}
-
-const initialProjects: Project[] = [
-  {
-    id: 1,
-    title: "E-Commerce Platform",
-    description:
-      "Plataforma de comercio electrónico full-stack con pasarela de pagos integrada.",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600",
-    tags: "React, Node.js, Stripe",
-    repo: "https://github.com",
-    demo: "https://demo.com",
-  },
-  {
-    id: 2,
-    title: "Task Management App",
-    description:
-      "Aplicación de gestión de tareas con drag & drop y colaboración en tiempo real.",
-    image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600",
-    tags: "React, Firebase, TailwindCSS",
-    repo: "https://github.com",
-    demo: "https://demo.com",
-  },
-];
+import { FeaturedProject } from "@/services/types";
+import {
+  fetchFeaturedProjects,
+  createFeaturedProject,
+  updateFeaturedProject,
+  deleteFeaturedProject,
+} from "@/services/featured-projects.service";
 
 const ProjectsManager = () => {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [projects, setProjects] = useState<FeaturedProject[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Project | null>(null);
+  const [editing, setEditing] = useState<FeaturedProject | null>(null);
   const [form, setForm] = useState({
     title: "",
     description: "",
     image: "",
-    tags: "",
-    repo: "",
-    demo: "",
+    technologies: "",
+    url: "",
+    github_url: "",
+    order: 0,
+    is_active: true,
   });
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  const loadProjects = async () => {
+    try {
+      const data = await fetchFeaturedProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error("Error loading projects:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openNew = () => {
     setEditing(null);
@@ -64,40 +56,57 @@ const ProjectsManager = () => {
       title: "",
       description: "",
       image: "",
-      tags: "",
-      repo: "",
-      demo: "",
+      technologies: "",
+      url: "",
+      github_url: "",
+      order: projects.length + 1,
+      is_active: true,
     });
     setDialogOpen(true);
   };
 
-  const openEdit = (p: Project) => {
+  const openEdit = (p: FeaturedProject) => {
     setEditing(p);
     setForm({
       title: p.title,
       description: p.description,
       image: p.image,
-      tags: p.tags,
-      repo: p.repo,
-      demo: p.demo,
+      technologies: p.technologies,
+      url: p.url || "",
+      github_url: p.github_url || "",
+      order: p.order,
+      is_active: p.is_active,
     });
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
-    if (editing) {
-      setProjects(
-        projects.map((p) => (p.id === editing.id ? { ...p, ...form } : p)),
-      );
-    } else {
-      setProjects([...projects, { id: Date.now(), ...form }]);
+  const handleSave = async () => {
+    try {
+      if (editing) {
+        const updated = await updateFeaturedProject(editing.id, form);
+        setProjects(projects.map((p) => (p.id === editing.id ? updated : p)));
+      } else {
+        const created = await createFeaturedProject(form);
+        setProjects([...projects, created]);
+      }
+      setDialogOpen(false);
+    } catch (error) {
+      console.error("Error saving project:", error);
     }
-    setDialogOpen(false);
   };
 
-  const handleDelete = (id: number) => {
-    setProjects(projects.filter((p) => p.id !== id));
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteFeaturedProject(id);
+      setProjects(projects.filter((p) => p.id !== id));
+    } catch (error) {
+      console.error("Error deleting project:", error);
+    }
   };
+
+  if (loading) {
+    return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+  }
 
   return (
     <motion.div
@@ -136,7 +145,7 @@ const ProjectsManager = () => {
                 {project.description}
               </p>
               <div className="flex flex-wrap gap-1 mt-2">
-                {project.tags.split(",").map((tag) => (
+                {project.technologies.split(",").map((tag) => (
                   <span
                     key={tag.trim()}
                     className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary"
@@ -202,27 +211,47 @@ const ProjectsManager = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Tags (separados por coma)</Label>
+              <Label>Tecnologías (separadas por coma)</Label>
               <Input
-                value={form.tags}
-                onChange={(e) => setForm({ ...form, tags: e.target.value })}
+                value={form.technologies}
+                onChange={(e) => setForm({ ...form, technologies: e.target.value })}
                 placeholder="React, Node.js"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Repositorio</Label>
+                <Label>URL GitHub</Label>
                 <Input
-                  value={form.repo}
-                  onChange={(e) => setForm({ ...form, repo: e.target.value })}
+                  value={form.github_url}
+                  onChange={(e) => setForm({ ...form, github_url: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Demo</Label>
+                <Label>URL Demo</Label>
                 <Input
-                  value={form.demo}
-                  onChange={(e) => setForm({ ...form, demo: e.target.value })}
+                  value={form.url}
+                  onChange={(e) => setForm({ ...form, url: e.target.value })}
                 />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Orden</Label>
+                <Input
+                  type="number"
+                  value={form.order}
+                  onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="flex items-center gap-2 pt-8">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={form.is_active}
+                  onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="is_active" className="text-sm">Activo</Label>
               </div>
             </div>
             <div className="flex gap-2 justify-end">

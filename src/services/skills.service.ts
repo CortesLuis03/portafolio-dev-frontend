@@ -1,5 +1,5 @@
 import { api } from "./api";
-import { Skill } from "./skills-category.service";
+import { Skill } from "./types";
 
 export const fetchSkills = async (): Promise<Skill[]> => {
   const { data } = await api.get("/skills");

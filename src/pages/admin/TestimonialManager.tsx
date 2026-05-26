@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Plus, Pencil, Trash2, Save, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,60 +11,99 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-interface Testimonial {
-  id: number;
-  name: string;
-  role: string;
-  text: string;
-}
-
-const initialData: Testimonial[] = [
-  {
-    id: 1,
-    name: "María García",
-    role: "CTO en TechCo",
-    text: "Un profesional excepcional. Su capacidad para resolver problemas complejos y entregar código limpio es admirable.",
-  },
-  {
-    id: 2,
-    name: "Carlos Rodríguez",
-    role: "Product Manager",
-    text: "Trabajar con él fue una experiencia fantástica. Siempre proactivo, con ideas innovadoras.",
-  },
-  {
-    id: 3,
-    name: "Ana López",
-    role: "Lead Designer",
-    text: "La colaboración más fluida que he tenido con un desarrollador.",
-  },
-];
+import { Testimonial } from "@/services/types";
+import {
+  fetchTestimonials,
+  createTestimonial,
+  updateTestimonial,
+  deleteTestimonial,
+} from "@/services/testimonials.service";
 
 const TestimonialsManager = () => {
-  const [items, setItems] = useState<Testimonial[]>(initialData);
+  const [items, setItems] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Testimonial | null>(null);
-  const [form, setForm] = useState({ name: "", role: "", text: "" });
+  const [form, setForm] = useState({
+    testimony: "",
+    person_name: "",
+    person_position: "",
+    person_company: "",
+    person_avatar: "",
+    order: 0,
+    is_active: true,
+  });
+
+  useEffect(() => {
+    loadTestimonials();
+  }, []);
+
+  const loadTestimonials = async () => {
+    try {
+      const data = await fetchTestimonials();
+      setItems(data);
+    } catch (error) {
+      console.error("Error loading testimonials:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: "", role: "", text: "" });
-    setDialogOpen(true);
-  };
-  const openEdit = (item: Testimonial) => {
-    setEditing(item);
-    setForm({ name: item.name, role: item.role, text: item.text });
+    setForm({
+      testimony: "",
+      person_name: "",
+      person_position: "",
+      person_company: "",
+      person_avatar: "",
+      order: items.length + 1,
+      is_active: true,
+    });
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
-    if (editing) {
-      setItems(items.map((i) => (i.id === editing.id ? { ...i, ...form } : i)));
-    } else {
-      setItems([...items, { id: Date.now(), ...form }]);
-    }
-    setDialogOpen(false);
+  const openEdit = (item: Testimonial) => {
+    setEditing(item);
+    setForm({
+      testimony: item.testimony,
+      person_name: item.person_name,
+      person_position: item.person_position,
+      person_company: item.person_company,
+      person_avatar: item.person_avatar || "",
+      order: item.order,
+      is_active: item.is_active,
+    });
+    setDialogOpen(true);
   };
+
+  const handleSave = async () => {
+    try {
+      if (editing) {
+        const updated = await updateTestimonial(editing.id, form);
+        setItems(items.map((i) => (i.id === editing.id ? updated : i)));
+      } else {
+        const created = await createTestimonial(form);
+        setItems([...items, created]);
+      }
+      setDialogOpen(false);
+    } catch (error) {
+      console.error("Error saving testimonial:", error);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteTestimonial(id);
+      setItems(items.filter((i) => i.id !== id));
+    } catch (error) {
+      console.error("Error deleting testimonial:", error);
+    }
+  };
+
+  if (loading) {
+    return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+  }
 
   return (
     <motion.div
@@ -105,19 +144,30 @@ const TestimonialsManager = () => {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 text-destructive"
-                  onClick={() =>
-                    setItems(items.filter((i) => i.id !== item.id))
-                  }
+                  onClick={() => handleDelete(item.id)}
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
             </div>
             <p className="text-xs text-secondary-foreground leading-relaxed mb-4">
-              "{item.text}"
+              "{item.testimony}"
             </p>
-            <p className="text-sm font-semibold text-foreground">{item.name}</p>
-            <p className="text-xs text-muted-foreground">{item.role}</p>
+            <div className="flex items-center gap-3">
+              {item.person_avatar && (
+                <img
+                  src={item.person_avatar}
+                  alt={item.person_name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              )}
+              <div>
+                <p className="text-sm font-semibold text-foreground">{item.person_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {item.person_position} {item.person_company && `en ${item.person_company}`}
+                </p>
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -128,29 +178,64 @@ const TestimonialsManager = () => {
             <DialogTitle>{editing ? "Editar" : "Nuevo"} Testimonio</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Nombre</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Cargo</Label>
-                <Input
-                  value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value })}
-                />
-              </div>
-            </div>
             <div className="space-y-2">
               <Label>Testimonio</Label>
               <Textarea
                 rows={4}
-                value={form.text}
-                onChange={(e) => setForm({ ...form, text: e.target.value })}
+                value={form.testimony}
+                onChange={(e) => setForm({ ...form, testimony: e.target.value })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Nombre</Label>
+              <Input
+                value={form.person_name}
+                onChange={(e) => setForm({ ...form, person_name: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Cargo</Label>
+                <Input
+                  value={form.person_position}
+                  onChange={(e) => setForm({ ...form, person_position: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Empresa</Label>
+                <Input
+                  value={form.person_company}
+                  onChange={(e) => setForm({ ...form, person_company: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>URL Avatar</Label>
+              <Input
+                value={form.person_avatar}
+                onChange={(e) => setForm({ ...form, person_avatar: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Orden</Label>
+                <Input
+                  type="number"
+                  value={form.order}
+                  onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="flex items-center gap-2 pt-8">
+                <input
+                  type="checkbox"
+                  id="is_active_test"
+                  checked={form.is_active}
+                  onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="is_active_test" className="text-sm">Activo</Label>
+              </div>
             </div>
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>

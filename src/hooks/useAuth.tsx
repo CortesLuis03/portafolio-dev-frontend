@@ -1,14 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "@/config/env";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  avatar?: string;
-}
+import { User } from "@/services/types";
 
 interface AuthContextType {
   user: User | null;

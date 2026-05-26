@@ -1,24 +1,5 @@
 import { api } from "./api";
-
-export interface Skill {
-  id: number;
-  category_id: number;
-  name: string;
-  icon: string;
-  order: number;
-  is_active: boolean;
-  category?: SkillCategory;
-}
-
-export interface SkillCategory {
-  id: number;
-  name: string;
-  slug: string;
-  icon?: string;
-  order: number;
-  is_active: boolean;
-  skills?: Skill[];
-}
+import { Skill, SkillCategory } from "./types";
 
 export const fetchSkillsTree = async (): Promise<SkillCategory[]> => {
   const { data } = await api.get("/skills-category/get-skills");

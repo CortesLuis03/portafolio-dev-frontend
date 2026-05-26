@@ -38,7 +38,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSkills } from "@/hooks/useSkills";
 import { useSkillsCategory } from "@/hooks/useSkillsCategory";
-import { Skill, SkillCategory } from "@/services/skills-category.service";
+import { Skill, SkillCategory } from "@/services/types";
 
 const SkillsManager = () => {
   const {
@@ -55,6 +55,7 @@ const SkillsManager = () => {
   } = useSkillsCategory();
 
   const [activeTab, setActiveTab] = useState("skills");
+  const [skillFilter, setSkillFilter] = useState<string>("all");
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [isCatDialogOpen, setIsCatDialogOpen] = useState(false);
 
@@ -156,7 +157,21 @@ const SkillsManager = () => {
         </TabsList>
 
         <TabsContent value="skills" className="space-y-6">
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <Select value={skillFilter} onValueChange={setSkillFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Todas las categorías" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {Array.isArray(categoriesQuery.data) &&
+                  categoriesQuery.data.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id.toString()}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
             <Button onClick={() => handleOpenSkillDialog()}>
               <Plus className="mr-2 h-4 w-4" /> Agregar Skill
             </Button>
@@ -175,7 +190,13 @@ const SkillsManager = () => {
               </TableHeader>
               <TableBody>
                 {Array.isArray(skillsQuery.data) &&
-                  skillsQuery.data.map((skill) => (
+                  skillsQuery.data
+                    .filter(
+                      (skill) =>
+                        skillFilter === "all" ||
+                        skill.category_id?.toString() === skillFilter,
+                    )
+                    .map((skill) => (
                     <TableRow key={skill.id}>
                       <TableCell>
                         <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />

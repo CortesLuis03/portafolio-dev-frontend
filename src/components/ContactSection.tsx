@@ -4,10 +4,12 @@ import { Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useSectionCounter } from "@/hooks/useSectionCounter";
 
 const ContactSection = () => {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const { counter, ref } = useSectionCounter("contact", true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +20,7 @@ const ContactSection = () => {
   };
 
   return (
-    <section id="contact" className="section-padding bg-card">
+    <section id="contact" ref={ref} className="section-padding bg-card">
       <div className="container mx-auto max-w-xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -26,7 +28,7 @@ const ContactSection = () => {
           viewport={{ once: true }}
           className="mb-12 text-center"
         >
-          <p className="font-mono text-sm text-primary mb-2">{"// 05"}</p>
+          <p className="font-mono text-sm text-primary mb-2">{`// ${counter}`}</p>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Contacto</h2>
           <p className="text-muted-foreground">
             ¿Tienes un proyecto en mente? Hablemos.

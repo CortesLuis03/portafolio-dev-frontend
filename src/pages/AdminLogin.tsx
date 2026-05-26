@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { useAuth } from "@/hooks/useAuth";
-import axios from "axios";
+import { login as loginService } from "@/services/auth.service";
 import { toast } from "sonner";
 
 const AdminLogin = () => {
@@ -23,15 +24,7 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/login`,
-        {
-          email,
-          password,
-        },
-      );
-
-      const { token, user } = response.data;
+      const { token, user } = await loginService(email, password);
       login(token, user);
       toast.success("Sesión iniciada correctamente");
       navigate("/admin");
