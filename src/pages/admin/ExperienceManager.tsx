@@ -115,7 +115,8 @@ const ExperienceManager = () => {
 
   const formatDate = (date: string) => {
     if (!date) return "";
-    const d = new Date(date);
+    const d = new Date(date.substring(0, 7) + "-01");
+    if (isNaN(d.getTime())) return "";
     return d.toLocaleDateString("es-ES", { month: "short", year: "numeric" });
   };
 

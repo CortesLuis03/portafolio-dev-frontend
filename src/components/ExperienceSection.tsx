@@ -27,7 +27,8 @@ const ExperienceSection = () => {
 
   const formatDate = (date: string) => {
     if (!date) return "";
-    const d = new Date(date + "-01");
+    const d = new Date(date.substring(0, 7) + "-01");
+    if (isNaN(d.getTime())) return "";
     return d.toLocaleDateString("es-ES", { month: "short", year: "numeric" });
   };
 
